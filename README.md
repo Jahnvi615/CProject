@@ -36,7 +36,7 @@ namespace DFBPI.Tests
             _userController = new UserController(_configurationMock.Object, _authServiceMock.Object, _applicationDbContext);
         }
 
-        [TearDown]
+        [TearDown]  // This method will be executed after each test
         public void TearDown()
         {
             // Cleanup after each test
