@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using DFBPI.Data;
-using Microsoft.EntityFrameworkCore;
 
 namespace DFBPI.Tests
 {
@@ -17,24 +16,17 @@ namespace DFBPI.Tests
     {
         private Mock<IAuthService> _authServiceMock;
         private Mock<IConfiguration> _configurationMock;
+        private Mock<ApplicationDbContext> _dbContextMock;  // Mocking ApplicationDbContext
         private UserController _userController;
 
         [SetUp]
         public void SetUp()
         {
-            // Mock services
             _authServiceMock = new Mock<IAuthService>();
             _configurationMock = new Mock<IConfiguration>();
+            _dbContextMock = new Mock<ApplicationDbContext>();  // Initialize mock for ApplicationDbContext
 
-            // Initialize controller with mocked services
-            _userController = new UserController(_configurationMock.Object, _authServiceMock.Object, null); // Pass null for DbContext if not needed for controller logic
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            // Clean up if necessary
-            // No need to dispose DbContext because it's not used directly in this case
+            _userController = new UserController(_configurationMock.Object, _authServiceMock.Object, _dbContextMock.Object);  // Pass mock
         }
 
         [Test]
@@ -55,13 +47,11 @@ namespace DFBPI.Tests
             var result = await _userController.Login(userDto);
 
             // Assert
-            Assert.IsInstanceOf<ActionResult>(result);  // Ensure result is ActionResult type
-            Assert.IsInstanceOf<OkObjectResult>(result.Result);  // Check if the inner result is OkObjectResult
-            var okResult = result.Result as OkObjectResult;
+            var okResult = result as OkObjectResult;
             Assert.IsNotNull(okResult);
             Assert.AreEqual("Login successful and token set in cookies.", okResult.Value);
         }
 
-        // Additional test cases can go here
+        // You can add more test cases, e.g. for invalid credentials, etc.
     }
 }
