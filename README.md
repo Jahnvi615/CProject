@@ -36,8 +36,11 @@ namespace DFBPI.Tests
         [TearDown]
         public void TearDown()
         {
-            // Dispose of the in-memory database after each test
-            _dbContext.Dispose();
+            // Ensure the DbContext is properly disposed
+            if (_dbContext != null)
+            {
+                _dbContext.Dispose();
+            }
         }
 
         [Test]
