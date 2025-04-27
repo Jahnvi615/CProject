@@ -7,6 +7,7 @@ using DFBPI.Model.Dto;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using DFBPI.Data;  // Make sure to include the namespace for ApplicationDbContext
 
 namespace DFBPI.Tests
 {
@@ -15,7 +16,7 @@ namespace DFBPI.Tests
     {
         private Mock<IAuthService> _authServiceMock;
         private Mock<IConfiguration> _configurationMock;
-        private Mock<SomeServiceType> _someServiceMock;  // Replace with actual type for the third parameter
+        private Mock<ApplicationDbContext> _applicationDbContextMock;  // Mocking ApplicationDbContext
         private UserController _userController;
 
         [SetUp]
@@ -23,10 +24,10 @@ namespace DFBPI.Tests
         {
             _authServiceMock = new Mock<IAuthService>();
             _configurationMock = new Mock<IConfiguration>();
-            _someServiceMock = new Mock<SomeServiceType>();  // Mocking the third dependency
+            _applicationDbContextMock = new Mock<ApplicationDbContext>();  // Mock ApplicationDbContext
 
             // Initialize the controller with the necessary mocks
-            _userController = new UserController(_configurationMock.Object, _authServiceMock.Object, _someServiceMock.Object);
+            _userController = new UserController(_configurationMock.Object, _authServiceMock.Object, _applicationDbContextMock.Object);
         }
 
         [Test]
