@@ -7,7 +7,8 @@ using DFBPI.Model.Dto;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using DFBPI.Data;  // Make sure to include the namespace for ApplicationDbContext
+using DFBPI.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace DFBPI.Tests
 {
@@ -16,7 +17,7 @@ namespace DFBPI.Tests
     {
         private Mock<IAuthService> _authServiceMock;
         private Mock<IConfiguration> _configurationMock;
-        private Mock<ApplicationDbContext> _applicationDbContextMock;  // Mocking ApplicationDbContext
+        private ApplicationDbContext _applicationDbContext;
         private UserController _userController;
 
         [SetUp]
@@ -24,10 +25,15 @@ namespace DFBPI.Tests
         {
             _authServiceMock = new Mock<IAuthService>();
             _configurationMock = new Mock<IConfiguration>();
-            _applicationDbContextMock = new Mock<ApplicationDbContext>();  // Mock ApplicationDbContext
+
+            // Use InMemoryDatabase for testing
+            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+                .UseInMemoryDatabase(databaseName: "TestDb")
+                .Options;
+            _applicationDbContext = new ApplicationDbContext(options);
 
             // Initialize the controller with the necessary mocks
-            _userController = new UserController(_configurationMock.Object, _authServiceMock.Object, _applicationDbContextMock.Object);
+            _userController = new UserController(_configurationMock.Object, _authServiceMock.Object, _applicationDbContext);
         }
 
         [Test]
