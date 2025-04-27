@@ -36,6 +36,13 @@ namespace DFBPI.Tests
             _userController = new UserController(_configurationMock.Object, _authServiceMock.Object, _applicationDbContext);
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            // Cleanup after each test
+            _applicationDbContext.Dispose();  // Dispose the in-memory database context
+        }
+
         [Test]
         public async Task Login_ShouldReturnOk_WhenCredentialsAreValid()
         {
