@@ -23,7 +23,6 @@ namespace DFBPI.Tests
         [SetUp]
         public void Setup()
         {
-            // Setting up the in-memory database for testing
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseInMemoryDatabase(databaseName: "TestDatabase")
                 .Options;
@@ -32,6 +31,13 @@ namespace DFBPI.Tests
             _mockQuoteService = new Mock<IQuoteService>();
             _mockLogger = new Mock<ILogger<QuoteController>>();
             _controller = new QuoteController(_mockQuoteService.Object, _dbContext, _mockLogger.Object);
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            // Dispose of the in-memory database after each test
+            _dbContext.Dispose();
         }
 
         [Test]
@@ -59,7 +65,6 @@ namespace DFBPI.Tests
                 PropertyArea = 1500
             };
 
-            // Mocking the CalculateFinalPremium method
             _mockQuoteService.Setup(x => x.CalculateFinalPremium(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
                 .Returns(1000m);
 
