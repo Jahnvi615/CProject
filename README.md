@@ -15,6 +15,7 @@ namespace DFBPI.Tests
     {
         private Mock<IAuthService> _authServiceMock;
         private Mock<IConfiguration> _configurationMock;
+        private Mock<SomeServiceType> _someServiceMock;  // Replace with actual type for the third parameter
         private UserController _userController;
 
         [SetUp]
@@ -22,7 +23,10 @@ namespace DFBPI.Tests
         {
             _authServiceMock = new Mock<IAuthService>();
             _configurationMock = new Mock<IConfiguration>();
-            _userController = new UserController(_configurationMock.Object, _authServiceMock.Object, null);
+            _someServiceMock = new Mock<SomeServiceType>();  // Mocking the third dependency
+
+            // Initialize the controller with the necessary mocks
+            _userController = new UserController(_configurationMock.Object, _authServiceMock.Object, _someServiceMock.Object);
         }
 
         [Test]
