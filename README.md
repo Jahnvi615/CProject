@@ -17,30 +17,24 @@ namespace DFBPI.Tests
     {
         private Mock<IAuthService> _authServiceMock;
         private Mock<IConfiguration> _configurationMock;
-        private ApplicationDbContext _applicationDbContext;
         private UserController _userController;
 
         [SetUp]
         public void SetUp()
         {
+            // Mock services
             _authServiceMock = new Mock<IAuthService>();
             _configurationMock = new Mock<IConfiguration>();
 
-            // Use InMemoryDatabase for testing
-            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: "TestDb")
-                .Options;
-            _applicationDbContext = new ApplicationDbContext(options);
-
-            // Initialize the controller with the necessary mocks
-            _userController = new UserController(_configurationMock.Object, _authServiceMock.Object, _applicationDbContext);
+            // Initialize controller with mocked services
+            _userController = new UserController(_configurationMock.Object, _authServiceMock.Object, null); // Pass null for DbContext if not needed for controller logic
         }
 
-        [TearDown]  // This method will be executed after each test
+        [TearDown]
         public void TearDown()
         {
-            // Cleanup after each test
-            _applicationDbContext.Dispose();  // Dispose the in-memory database context
+            // Clean up if necessary
+            // No need to dispose DbContext because it's not used directly in this case
         }
 
         [Test]
@@ -68,6 +62,6 @@ namespace DFBPI.Tests
             Assert.AreEqual("Login successful and token set in cookies.", okResult.Value);
         }
 
-        // You can add more test cases, e.g. for invalid credentials, etc.
+        // Additional test cases can go here
     }
 }
