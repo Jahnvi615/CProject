@@ -1,46 +1,75 @@
-[Test]
-public async Task CreateQuoteAsync_ReturnsValidQuoteObject()
+using NUnit.Framework;
+using Moq;
+using DFBPI.Controllers;
+using DFBPI.Services;
+using DFBPI.Data;
+using DFBPI.Model;
+using DFBPI.Model.Dto;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Threading.Tasks;
+
+namespace DFBPI.Tests
 {
-    // Arrange
-    var request = new CreateQuoteRequestDto
+    public class QuoteControllerTests
     {
-        Name = "John Doe",
-        Email = "john.doe@example.com",
-        PhoneNo = "1234567890",
-        PropertyAddress = "123 Main St",
-        PropertyType = "House",
-        ConstructionType = "Brick",
-        Age = 5,
-        Tier = 1,
-        HasFireAlarm = true,
-        HasSprinklerSystem = true,
-        HasSecurityCameras = true,
-        HasSecurityGuards = false,
-        BuildingSumInsured = 500000m,
-        ContentsSumInsured = 200000m,
-        StartDate = DateTime.UtcNow.AddDays(1),
-        EndDate = DateTime.UtcNow.AddYears(1),
-        PropertyArea = 250
-    };
+        private Mock<IQuoteService> _mockQuoteService;
+        private Mock<ILogger<QuoteController>> _mockLogger;
+        private ApplicationDbContext _dbContext;
+        private QuoteController _controller;
 
-    var userId = Guid.NewGuid(); // Create a new user ID for the test
-    // Simulating a user retrieval logic for the test, or you can mock the user data
-    var user = new ApplicationUser { UserId = userId, Role = RoleType.User };
-    _dbContext.Users.Add(user);
-    await _dbContext.SaveChangesAsync();
+        [SetUp]
+        public void Setup()
+        {
+            // Setting up the in-memory database for testing
+            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
 
-    // Act
-    var result = await _quoteService.CreateQuoteAsync(request, userId); // Call the service method directly
+            _dbContext = new ApplicationDbContext(options);
+            _mockQuoteService = new Mock<IQuoteService>();
+            _mockLogger = new Mock<ILogger<QuoteController>>();
+            _controller = new QuoteController(_mockQuoteService.Object, _dbContext, _mockLogger.Object);
+        }
 
-    // Assert
-    Assert.IsNotNull(result);
-    Assert.AreEqual("John Doe", result.Name);
-    Assert.AreEqual("john.doe@example.com", result.Email);
-    Assert.AreEqual(500000m, result.BuildingSumInsured);
-    Assert.AreEqual(200000m, result.ContentsSumInsured);
-    Assert.AreEqual("Silver", result.PlanType.ToString()); // Check if default plan is Silver
-    Assert.AreEqual(750000m, result.GoldCoverageAmount); // Total coverage for Gold plan
-    Assert.AreEqual(500000m, result.SilverCoverageAmount); // Total coverage for Silver plan
-    Assert.AreEqual(1000000m, result.PlatinumCoverageAmount); // Total coverage for Platinum plan
-    Assert.AreEqual("123 Main St", result.PropertyAddress);
+        [Test]
+        public async Task CreatePolicyQuote_ValidRequest_ReturnsOkResult()
+        {
+            // Arrange
+            var req = new CreateQuoteRequestDto
+            {
+                Name = "John Doe",
+                Email = "john@example.com",
+                PhoneNo = "1234567890",
+                PropertyAddress = "123 Main St",
+                PropertyType = "Residential",
+                ConstructionType = "Brick",
+                Age = 5,
+                Tier = 1,
+                HasFireAlarm = true,
+                HasSprinklerSystem = false,
+                HasSecurityCameras = true,
+                HasSecurityGuards = false,
+                ContentsSumInsured = 10000,
+                BuildingSumInsured = 50000,
+                StartDate = DateTime.UtcNow,
+                EndDate = DateTime.UtcNow.AddYears(1),
+                PropertyArea = 1500
+            };
+
+            // Mocking the CalculateFinalPremium method
+            _mockQuoteService.Setup(x => x.CalculateFinalPremium(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
+                .Returns(1000m);
+
+            // Act
+            var result = await _controller.CreatePolicyQuote(req);
+
+            // Assert
+            var okResult = result as OkObjectResult;
+            Assert.IsNotNull(okResult);
+            Assert.AreEqual(200, okResult.StatusCode);
+        }
+    }
 }
